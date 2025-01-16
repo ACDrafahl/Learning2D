@@ -2,9 +2,13 @@ package com.example;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Random;
-import javax.swing.*;
 
 public class Board extends JPanel implements ActionListener, KeyListener {
 
@@ -18,6 +22,9 @@ public class Board extends JPanel implements ActionListener, KeyListener {
     public static final int NUM_COINS = 5;
     // suppress serialization warning
     private static final long serialVersionUID = 490905409104883233L;
+
+    // Changes which frame of animation Pac-Man is in
+    private int pacFrame = 0;
     
     // keep a reference to the timer object that triggers actionPerformed() in
     // case we need access to it in another method
@@ -73,6 +80,9 @@ public class Board extends JPanel implements ActionListener, KeyListener {
             coin.draw(g, this);
         }
         player.draw(g, this);
+
+        // New donut method
+        drawPacMan(g);
 
         // this smooths out animations on some systems
         Toolkit.getDefaultToolkit().sync();
@@ -143,6 +153,37 @@ public class Board extends JPanel implements ActionListener, KeyListener {
         int y = rect.y + ((rect.height - metrics.getHeight()) / 2) + metrics.getAscent();
         // draw the string
         g2d.drawString(text, x, y);
+    }
+
+    private void drawPacMan(Graphics g) {
+
+        Graphics2D g2d = (Graphics2D) g;
+
+        RenderingHints rh
+                = new RenderingHints(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+
+        rh.put(RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_QUALITY);
+
+        g2d.setRenderingHints(rh);
+
+        Dimension size = getSize();
+        double w = size.getWidth();
+        double h = size.getHeight();
+
+        Line2D e = new Line2D.Double(0, 0, 50, 50);
+        g2d.setStroke(new BasicStroke(10));
+        g2d.setColor(Color.yellow);
+
+        for (double deg = 0; deg < ((pacFrame + 270) % 360); deg += 5) {
+            AffineTransform at
+                    = AffineTransform.getTranslateInstance(w/2, h/2);
+            at.rotate(Math.toRadians(deg));
+            g2d.draw(at.createTransformedShape(e));
+        }
+
+        pacFrame++;
     }
 
     private ArrayList<Coin> populateCoins() {
